@@ -3,11 +3,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0B1020;
+  --background: #070b13;
   --foreground: #F3F4F6;
   /* New neumorphic variables */
-  --surface: #FFFFFF; /* Light surface */
-  --accent: #4F46E5; /* Primary accent */
+  --surface: #FFFFFF;
+  /* Light surface */
+  --accent: #4F46E5;
+  /* Primary accent */
   --text-secondary: #6B7280;
 }
 
@@ -18,17 +20,18 @@
 }
 
 /* Theme color specifications */
-:root, .theme-light {
+:root,
+.theme-light {
   --background: #F4F5F7;
   --foreground: #1F2937;
   --surface: #FFFFFF;
   --accent: #4F46E5;
   --card-bg: #FFFFFF;
   --panel-bg: #F4F5F7;
-  --border: rgba(31,41,55,0.1);
+  --border: rgba(31, 41, 55, 0.1);
   --text-primary: #1F2937;
   --text-secondary: #6B7280;
-  --chart-grid: rgba(31,41,55,0.04);
+  --chart-grid: rgba(31, 41, 55, 0.04);
 }
 
 
@@ -39,10 +42,10 @@
   --accent: #6366F1;
   --card-bg: #1F2937;
   --panel-bg: #111827;
-  --border: rgba(31,41,55,0.1);
+  --border: rgba(31, 41, 55, 0.1);
   --text-primary: #F9FAFB;
   --text-secondary: #9CA3AF;
-  --chart-grid: rgba(255,255,255,0.04);
+  --chart-grid: rgba(255, 255, 255, 0.04);
 }
 
 body {
@@ -52,7 +55,24 @@ body {
 }
 
 /* Gorgeous transition animations for smooth background & text changes */
-html, body, div, table, tr, td, th, button, p, h1, h2, h3, h4, span, label, input, textarea, select {
+html,
+body,
+div,
+table,
+tr,
+td,
+th,
+button,
+p,
+h1,
+h2,
+h3,
+h4,
+span,
+label,
+input,
+textarea,
+select {
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -70,89 +90,110 @@ html, body, div, table, tr, td, th, button, p, h1, h2, h3, h4, span, label, inpu
 }
 
 /* Canvas backgrounds and absolute layouts */
-.theme-light .bg-\[\#0B1020\] {
-  background-color: var(--background) !important;
-}
-.theme-light .fixed.inset-0.bg-\[\#0B1020\] {
+.theme-light [class*="bg-[#070b13]"] {
   background-color: var(--background) !important;
 }
 
 /* Cards & containers background slots */
-.theme-light .bg-\[\#121826\] {
+.theme-light [class*="bg-[#121826]"] {
   background-color: var(--card-bg) !important;
 }
 
 /* Table headers & inner block elements */
-.theme-light .bg-\[\#111827\] {
+.theme-light [class*="bg-[#111827]"] {
   background-color: var(--panel-bg) !important;
 }
-.theme-light .bg-slate-900 {
+
+.theme-light .bg-slate-900,
+.theme-light [class*="bg-slate-900"] {
   background-color: var(--panel-bg) !important;
 }
-.theme-light .bg-slate-950 {
+
+.theme-light .bg-slate-950,
+.theme-light [class*="bg-slate-950"] {
   background-color: var(--background) !important;
 }
 
 /* Interactive tables / details transparent columns */
-.theme-light .bg-\[\#111827\]\/80 {
+.theme-light [class*="bg-[#111827]/80"] {
   background-color: rgba(241, 245, 249, 0.85) !important;
 }
-.theme-light .bg-\[\#111827\]\/60 {
+
+.theme-light [class*="bg-[#111827]/60"] {
   background-color: rgba(241, 245, 249, 0.65) !important;
 }
-.theme-light .bg-\[\#111827\]\/40 {
+
+.theme-light [class*="bg-[#111827]/40"] {
   background-color: rgba(241, 245, 249, 0.45) !important;
 }
 
 /* Dropdown list items and elements */
-.theme-light .bg-\[\#121826\]\/95 {
+.theme-light [class*="bg-[#121826]/95"] {
   background-color: rgba(255, 255, 255, 0.95) !important;
 }
-.theme-light .hover\:bg-slate-800\/50:hover {
+
+.theme-light [class*="hover:bg-slate-800/50"]:hover {
   background-color: rgba(226, 232, 240, 0.5) !important;
 }
 
 /* Load More, navigation, page control buttons */
-.theme-light .bg-slate-800 {
+.theme-light .bg-slate-800,
+.theme-light [class*="bg-slate-800"] {
   background-color: #E2E8F0 !important;
   color: var(--text-primary) !important;
 }
-.theme-light .bg-slate-800\/60 {
+
+.theme-light [class*="bg-slate-800/60"] {
   background-color: rgba(226, 232, 240, 0.6) !important;
   color: var(--text-primary) !important;
 }
-.theme-light .hover\:bg-slate-700:hover {
+
+.theme-light [class*="hover:bg-slate-700"]:hover {
   background-color: #CBD5E1 !important;
 }
 
 /* Text highlights and descriptions */
-.theme-light .text-slate-100 {
+.theme-light .text-slate-100,
+.theme-light [class*="text-slate-100"] {
   color: var(--text-primary) !important;
 }
-.theme-light .text-slate-200 {
+
+.theme-light .text-slate-200,
+.theme-light [class*="text-slate-200"] {
   color: var(--text-primary) !important;
 }
-.theme-light .text-slate-300 {
+
+.theme-light .text-slate-300,
+.theme-light [class*="text-slate-300"] {
   color: var(--text-primary) !important;
 }
-.theme-light .text-slate-400 {
+
+.theme-light .text-slate-400,
+.theme-light [class*="text-slate-400"] {
   color: var(--text-secondary) !important;
 }
-.theme-light .text-slate-500 {
+
+.theme-light .text-slate-500,
+.theme-light [class*="text-slate-500"] {
   color: var(--text-secondary) !important;
 }
-.theme-light .text-white {
+
+.theme-light .text-white,
+.theme-light [class*="text-white"] {
   color: var(--text-primary) !important;
 }
 
 /* Sleek borders and outlines */
-.theme-light .border-white\/5 {
+.theme-light [class*="border-white/5"] {
   border-color: var(--border) !important;
 }
-.theme-light .border-white\/10 {
+
+.theme-light [class*="border-white/10"] {
   border-color: var(--border) !important;
 }
-.theme-light .border-slate-800 {
+
+.theme-light .border-slate-800,
+.theme-light [class*="border-slate-800"] {
   border-color: var(--border) !important;
 }
 
@@ -161,7 +202,6 @@ html, body, div, table, tr, td, th, button, p, h1, h2, h3, h4, span, label, inpu
 .theme-light .recharts-cartesian-grid-vertical line {
   stroke: var(--chart-grid) !important;
 }
-
 
 /* ================================================= */
 /* DEEP DARK THEME SELECTOR OVERRIDES */
@@ -177,87 +217,108 @@ html, body, div, table, tr, td, th, button, p, h1, h2, h3, h4, span, label, inpu
 }
 
 /* Canvas backgrounds and absolute layouts */
-.theme-dark .bg-\[\#0B1020\] {
-  background-color: var(--background) !important;
-}
-.theme-dark .fixed.inset-0.bg-\[\#0B1020\] {
+.theme-dark [class*="bg-[#070b13]"] {
   background-color: var(--background) !important;
 }
 
 /* Cards & containers background slots */
-.theme-dark .bg-\[\#121826\] {
+.theme-dark [class*="bg-[#121826]"] {
   background-color: var(--card-bg) !important;
 }
 
 /* Table headers & inner block elements */
-.theme-dark .bg-\[\#111827\] {
+.theme-dark [class*="bg-[#111827]"] {
   background-color: var(--panel-bg) !important;
 }
-.theme-dark .bg-slate-900 {
+
+.theme-dark .bg-slate-900,
+.theme-dark [class*="bg-slate-900"] {
   background-color: var(--panel-bg) !important;
 }
-.theme-dark .bg-slate-950 {
+
+.theme-dark .bg-slate-950,
+.theme-dark [class*="bg-slate-950"] {
   background-color: var(--background) !important;
 }
 
 /* Interactive tables / details transparent columns */
-.theme-dark .bg-\[\#111827\]\/80 {
+.theme-dark [class*="bg-[#111827]/80"] {
   background-color: rgba(3, 7, 18, 0.85) !important;
 }
-.theme-dark .bg-\[\#111827\]\/60 {
+
+.theme-dark [class*="bg-[#111827]/60"] {
   background-color: rgba(3, 7, 18, 0.65) !important;
 }
-.theme-dark .bg-\[\#111827\]\/40 {
+
+.theme-dark [class*="bg-[#111827]/40"] {
   background-color: rgba(3, 7, 18, 0.45) !important;
 }
 
 /* Dropdown list items and elements */
-.theme-dark .bg-\[\#121826\]\/95 {
+.theme-dark [class*="bg-[#121826]/95"] {
   background-color: rgba(10, 14, 26, 0.95) !important;
 }
-.theme-dark .hover\:bg-slate-800\/50:hover {
+
+.theme-dark [class*="hover:bg-slate-800/50"]:hover {
   background-color: rgba(17, 24, 39, 0.5) !important;
 }
 
 /* Load More, navigation, page control buttons */
-.theme-dark .bg-slate-800 {
+.theme-dark .bg-slate-800,
+.theme-dark [class*="bg-slate-800"] {
   background-color: #111827 !important;
 }
-.theme-dark .bg-slate-800\/60 {
+
+.theme-dark [class*="bg-slate-800/60"] {
   background-color: rgba(17, 24, 39, 0.6) !important;
 }
-.theme-dark .hover\:bg-slate-700:hover {
+
+.theme-dark [class*="hover:bg-slate-700"]:hover {
   background-color: #1F2937 !important;
 }
 
 /* Text highlights and descriptions */
-.theme-dark .text-slate-100 {
+.theme-dark .text-slate-100,
+.theme-dark [class*="text-slate-100"] {
   color: var(--text-primary) !important;
 }
-.theme-dark .text-slate-200 {
+
+.theme-dark .text-slate-200,
+.theme-dark [class*="text-slate-200"] {
   color: var(--text-primary) !important;
 }
-.theme-dark .text-slate-300 {
+
+.theme-dark .text-slate-300,
+.theme-dark [class*="text-slate-300"] {
   color: var(--text-primary) !important;
 }
-.theme-dark .text-slate-400 {
+
+.theme-dark .text-slate-400,
+.theme-dark [class*="text-slate-400"] {
   color: var(--text-secondary) !important;
 }
-.theme-dark .text-slate-500 {
+
+.theme-dark .text-slate-500,
+.theme-dark [class*="text-slate-500"] {
   color: var(--text-secondary) !important;
 }
-.theme-dark .text-white {
+
+.theme-dark .text-white,
+.theme-dark [class*="text-white"] {
   color: var(--text-primary) !important;
 }
 
 /* Sleek borders and outlines */
-.theme-dark .border-white\/5 {
+.theme-dark [class*="border-white/5"] {
   border-color: var(--border) !important;
 }
-.theme-dark .border-white\/10 {
+
+.theme-dark [class*="border-white/10"] {
   border-color: var(--border) !important;
 }
-.theme-dark .border-slate-800 {
+
+.theme-dark .border-slate-800,
+.theme-dark [class*="border-slate-800"] {
   border-color: var(--border) !important;
 }
 
@@ -266,3 +327,13 @@ html, body, div, table, tr, td, th, button, p, h1, h2, h3, h4, span, label, inpu
 .theme-dark .recharts-cartesian-grid-vertical line {
   stroke: var(--chart-grid) !important;
 }
+
+/* Override default browser autofill white/light backgrounds in inputs to match the theme dynamically */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--panel-bg) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

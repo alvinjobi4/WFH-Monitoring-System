@@ -6,6 +6,7 @@ export interface SessionMetrics {
   unproductiveDurationSeconds: number;
   neutralDurationSeconds: number;
   idleDurationSeconds: number;
+  breakDurationSeconds: number;
   appSwitches: number;
   distractionCount: number;
   focusScore: number;         // 0 to 100
@@ -30,6 +31,7 @@ export const calculateSessionMetrics = (
       unproductiveDurationSeconds: 0,
       neutralDurationSeconds: 0,
       idleDurationSeconds: 0,
+      breakDurationSeconds: 0,
       appSwitches: 0,
       distractionCount: 0,
       focusScore: 100,
@@ -51,6 +53,7 @@ export const calculateSessionMetrics = (
   let unprodSec = 0;
   let neutSec = 0;
   let idleSec = 0;
+  let breakSec = 0;
   let switches = 0;
   let distractions = 0;
   let lastApp = "";
@@ -110,8 +113,8 @@ export const calculateSessionMetrics = (
       prodSec += duration;
       currentDeepBlockDuration += duration;
     } else {
-      // Break deep work block on distraction or idle
-      if (classification.category === "Unproductive" || classification.category === "Idle") {
+      // Break deep work block on distraction, break, or idle
+      if (classification.category === "Unproductive" || classification.category === "Idle" || classification.category === "Break") {
         if (currentDeepBlockDuration >= 900) { // 15 mins
           deepBlocksCount++;
           totalDeepWorkSec += currentDeepBlockDuration;
@@ -124,6 +127,8 @@ export const calculateSessionMetrics = (
         distractions++;
       } else if (classification.category === "Idle") {
         idleSec += duration;
+      } else if (classification.category === "Break") {
+        breakSec += duration;
       } else {
         neutSec += duration;
       }
@@ -138,7 +143,7 @@ export const calculateSessionMetrics = (
 
   // 2. Focus Score calculation (Clamped 0 to 100)
   // Highly continuous work gets higher score. Distractions and frequent context switches reduce it.
-  const activeSec = totalSec - idleSec;
+  const activeSec = totalSec - idleSec - breakSec;
   const prodRatio = activeSec > 0 ? prodSec / activeSec : 0;
   
   let calculatedFocus = Math.round(prodRatio * 100);
@@ -186,6 +191,7 @@ export const calculateSessionMetrics = (
     unproductiveDurationSeconds: unprodSec,
     neutralDurationSeconds: neutSec,
     idleDurationSeconds: idleSec,
+    breakDurationSeconds: breakSec,
     appSwitches: switches,
     distractionCount: distractions,
     focusScore,

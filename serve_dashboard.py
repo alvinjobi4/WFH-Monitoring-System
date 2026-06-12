@@ -7,10 +7,30 @@ import io
 # Fix Windows console Unicode encoding
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
+class Tee:
+    def __init__(self, *files):
+        self.files = files
+    def write(self, obj):
+        for f in self.files:
+            try:
+                f.write(obj)
+                f.flush()
+            except Exception:
+                pass
+    def flush(self):
+        for f in self.files:
+            try:
+                f.flush()
+            except Exception:
+                pass
 
 # Set the serving directory to employee-dashboard/out relative to script folder
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SERVE_DIR = os.path.join(SCRIPT_DIR, "employee-dashboard", "out")
+
+log_file = open(os.path.join(SCRIPT_DIR, "dev_server.log"), "w", encoding="utf-8")
+sys.stdout = Tee(sys.stdout, log_file)
+sys.stderr = Tee(sys.stderr, log_file)
 
 if not os.path.exists(SERVE_DIR):
     print(f"Error: The directory '{SERVE_DIR}' does not exist.")

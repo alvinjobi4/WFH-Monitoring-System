@@ -19,17 +19,7 @@ logging.basicConfig(
 # IMPORT YOUR TRACKER
 # ==========================================
 
-from tracker import start_tracking
-
-# ==========================================
-# EXIT FUNCTION
-# ==========================================
-
-def quit_app(icon, item):
-
-    logging.info("Tracker stopped")
-
-    icon.stop()
+from tracker import start_tracking, push_status_change
 
 # ==========================================
 # CREATE SIMPLE ICON
@@ -42,13 +32,14 @@ image = Image.new(
 )
 
 # ==========================================
-# MENU
+# MENU (No Exit Option)
 # ==========================================
 
 menu = pystray.Menu(
     pystray.MenuItem(
-        "Exit",
-        quit_app
+        "WFH Monitor Active",
+        lambda icon, item: None,
+        enabled=False
     )
 )
 

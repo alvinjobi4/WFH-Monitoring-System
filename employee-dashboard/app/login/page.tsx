@@ -1,90 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabase";
 
 export default function EmployeeLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    router.replace("/");
+  }, [router]);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    const userName = data.user?.user_metadata?.full_name || data.user?.email || email;
-
-    localStorage.setItem("userRole", "employee");
-    localStorage.setItem("userName", userName as string);
-
-    router.push("/employee");
-  };
-
-  return (
-    <div className="min-h-screen bg-[#0B1020] text-slate-100 flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-      <div className="fixed inset-0 bg-[#0B1020] -z-10" />
-
-      <div className="relative max-w-sm w-full mx-auto">
-        <div className="relative bg-[#121826] border border-white/5 rounded-[14px] shadow-sm p-6 md:p-8">
-          <h2 className="text-xl font-semibold text-slate-100 tracking-tight text-center mb-6">Employee Login</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-0.5">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111827] border border-white/5 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs text-white placeholder-slate-500 transition-all"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-0.5">Password</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111827] border border-white/5 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs text-white placeholder-slate-500 transition-all"
-                placeholder="Enter your password"
-              />
-            </div>
-
-            {error && (
-              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/10 text-rose-400 text-xs text-center font-medium">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
-            >
-              {loading ? "Signing In..." : "Sign In"}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }

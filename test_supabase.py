@@ -5,12 +5,6 @@ key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0
 
 supabase = create_client(url, key)
 
-data = {
-    "employee_name": "Alvin",
-    "app_name": "Chrome",
-    "website": "youtube.com"
-}
-
-response = supabase.table("activity_logs").insert(data).execute()
-
-print(response)
+response = supabase.table("activity_logs").select("employee_name").execute()
+names = set(item['employee_name'] for item in response.data if item.get('employee_name'))
+print(names)

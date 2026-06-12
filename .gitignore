@@ -18,6 +18,12 @@ employee-dashboard/build/
 employee-dashboard/*.tsbuildinfo
 employee-dashboard/next-env.d.ts
 
+# Environment / Secrets (API keys)
+.env
+.env.local
+.env*.local
+employee-dashboard/.env.local
+
 # Misc files
 feefsf
 .DS_Store

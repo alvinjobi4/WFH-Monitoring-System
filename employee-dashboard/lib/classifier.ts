@@ -1,13 +1,14 @@
 // ==========================================
 // ROLE-AWARE PRODUCTIVITY INTELLIGENCE TYPES
 // ==========================================
-export type ProductivityCategory = "Productive" | "Unproductive" | "Neutral" | "Idle";
+export type ProductivityCategory = "Productive" | "Unproductive" | "Neutral" | "Idle" | "Break";
 
 export const PRODUCTIVITY_COLORS = {
   Productive: "#10B981",    // SaaS Success Green
   Unproductive: "#EF4444",  // SaaS Danger Red
   Idle: "#6B7280",          // SaaS Muted Gray
-  Neutral: "#3B82F6"        // SaaS Accent Blue
+  Neutral: "#3B82F6",        // SaaS Accent Blue
+  Break: "#F59E0B"          // SaaS Warning/Break Amber/Yellow
 };
 
 export interface Role {
@@ -52,28 +53,64 @@ export interface AIClassification {
 export const FALLBACK_ROLES: Record<string, Role> = {
   "role_1": {
     id: "11111111-1111-1111-1111-111111111111",
-    name: "Role 1",
+    name: "Knowledge Worker",
     parent_role_id: null,
-    description: "Placeholder Role 1"
+    description: "Default role for general office tasks and coordination"
   },
   "role_2": {
     id: "22222222-2222-2222-2222-222222222222",
-    name: "Role 2",
-    parent_role_id: null,
-    description: "Placeholder Role 2"
+    name: "Software Developer",
+    parent_role_id: "11111111-1111-1111-1111-111111111111",
+    description: "Technical role specializing in coding, design, and analysis"
   },
   "role_3": {
     id: "33333333-3333-3333-3333-333333333333",
-    name: "Role 3",
-    parent_role_id: null,
-    description: "Placeholder Role 3"
+    name: "Designer",
+    parent_role_id: "11111111-1111-1111-1111-111111111111",
+    description: "Visual and UI designer, leverages figma and modeling resources"
   },
   "role_4": {
     id: "44444444-4444-4444-4444-444444444444",
-    name: "Role 4",
-    parent_role_id: null,
-    description: "Placeholder Role 4"
+    name: "Recruiter",
+    parent_role_id: "11111111-1111-1111-1111-111111111111",
+    description: "Talent acquisition, heavy social platforming and outreach"
   }
+};
+
+export const getNormalizedRoleName = (roleOrDept: string): string => {
+  const normalized = (roleOrDept || "").toLowerCase().trim();
+  
+  if (
+    normalized === "22222222-2222-2222-2222-222222222222" ||
+    normalized.includes("role_2") ||
+    normalized.includes("engineering") ||
+    normalized.includes("software") ||
+    normalized.includes("developer") ||
+    normalized.includes("dev")
+  ) {
+    return "Software Developer";
+  }
+  if (
+    normalized === "33333333-3333-3333-3333-333333333333" ||
+    normalized.includes("role_3") ||
+    normalized.includes("electrical") ||
+    normalized.includes("designer") ||
+    normalized.includes("design") ||
+    normalized.includes("frontend")
+  ) {
+    return "Designer";
+  }
+  if (
+    normalized === "44444444-4444-4444-4444-444444444444" ||
+    normalized.includes("role_4") ||
+    normalized.includes("recruiter") ||
+    normalized.includes("hr") ||
+    normalized.includes("hiring") ||
+    normalized.includes("talent")
+  ) {
+    return "Recruiter";
+  }
+  return "Knowledge Worker";
 };
 
 export const FALLBACK_RULES: RoleRule[] = [
@@ -107,7 +144,9 @@ export const extractDomain = (website: string): string => {
     const parts = clean.split(" | ");
     clean = parts[parts.length - 1] || "";
   }
-  clean = clean.replace(/\s*-\s*(Google Chrome|Microsoft Edge|Firefox|Chrome|Web Browser)\s*$/i, "").trim();
+  // Strip notification counts like (4) at the start of the title
+  clean = clean.replace(/^\(\d+\)\s+/i, "").trim();
+  clean = clean.replace(/\s*-\s*(Google Chrome|Microsoft Edge|Firefox|Chrome|Web Browser|Brave|Brave Browser|Brave Nightly|Opera|Safari)\s*$/i, "").trim();
   if (clean.startsWith("http")) {
     try {
       clean = new URL(clean).hostname;
@@ -165,11 +204,11 @@ export const normalizeActivity = (appName: string, website: string): NormalizedA
 // ROLE HIERARCHY TREE BUILDER
 // ==========================================
 const getActiveRoleRulesRecursive = (roleName: string): RoleRule[] => {
-  const normalizedSearch = (roleName || "").toLowerCase().replace(" ", "_");
+  const searchName = getNormalizedRoleName(roleName);
   const activeRole = Object.entries(FALLBACK_ROLES).find(
-    ([key, r]) => key.toLowerCase() === normalizedSearch || 
-                  r.name.toLowerCase() === roleName.toLowerCase() || 
-                  r.id === roleName
+    ([key, r]) => key.toLowerCase() === searchName.toLowerCase() ||
+      r.name.toLowerCase() === searchName.toLowerCase() ||
+      r.id === searchName
   )?.[1];
 
   if (!activeRole) {
@@ -199,29 +238,66 @@ const getActiveRoleRulesRecursive = (roleName: string): RoleRule[] => {
 // ==========================================
 // MODULAR SCORING & PIPELINE ENGINE
 // ==========================================
+export interface DomainRuleInfo {
+  type: "whitelist" | "blacklist" | "neutral";
+  score: number;
+}
+
 export const classifyActivityWithAI = (
   appName: string,
   website: string,
   rawCategory: string,
   roleName = "role_1",
   durationSeconds = 0,
-  recentHistory: { app_name: string; website: string; timestamp: string }[] = []
+  recentHistory: { app_name: string; website: string; timestamp: string }[] = [],
+  groqClassification?: { category: string; score: number; reason: string } | null,
+  domainRulesMap?: Record<string, DomainRuleInfo>,
+  logStartTime?: string,
+  breakLogs?: Array<{ start_time: string; end_time?: string | null }>
 ): AIClassification => {
-  // 1. Idle Detection
-  const appLower = (appName || "").toLowerCase();
+  // 1. Normalize
+  const normalized = normalizeActivity(appName, website);
+
+  // 1.5. Manual Break Session Override
+  if (logStartTime && breakLogs && breakLogs.length > 0) {
+    const logTime = new Date(logStartTime).getTime();
+    const insideBreak = breakLogs.some(b => {
+      const bStart = new Date(b.start_time).getTime();
+      const bEnd = b.end_time ? new Date(b.end_time).getTime() : Date.now();
+      return logTime >= bStart && logTime <= bEnd;
+    });
+    if (insideBreak) {
+      return {
+        cleanName: appName?.startsWith("STATUS_CHANGE") ? appName.split(" | ")[1] === "on_break" ? "Start Break Session" : "End Break Session" : "On Break",
+        category: "Break",
+        score: 0,
+        confidence: 1.0,
+        reason: "Activity was logged during a manually initiated break session.",
+        modifiersApplied: []
+      };
+    }
+  }
+
+  // 2. Idle / Sleep Detection
+  const appLower = normalized.process.toLowerCase();
   const webLower = (website || "").toLowerCase();
-  if (appLower === "idle" || rawCategory === "Idle" || (appLower === "unknown" && webLower === "idle")) {
+  if (
+    appLower === "idle" ||
+    appLower === "unknown" ||
+    rawCategory === "Idle" ||
+    (appLower === "unknown" && webLower === "idle")
+  ) {
     return {
-      cleanName: "Idle",
+      cleanName: "Idle / Sleep",
       category: "Idle",
       score: 0,
       confidence: 1.0,
-      reason: "System-wide Idle Detection active",
+      reason: "System was idle, locked, or in sleep mode.",
       modifiersApplied: []
     };
   }
 
-  // 2. Status Change detection
+  // 3. Status Change detection
   if (appName?.startsWith("STATUS_CHANGE")) {
     const statusVal = appName.split(" | ")[1] || "Offline";
     const formattedStatus = statusVal.toLowerCase() === "dnd" ? "DND" : statusVal.charAt(0).toUpperCase() + statusVal.slice(1).toLowerCase();
@@ -235,8 +311,120 @@ export const classifyActivityWithAI = (
     };
   }
 
-  // 3. Normalize
-  const normalized = normalizeActivity(appName, website);
+  // 3.5. Check domain rules map (whitelist/blacklist bypass)
+  if (domainRulesMap) {
+    const domain = normalized.domain;
+    const processLower = normalized.process.toLowerCase();
+    const cleanTitleLower = normalized.cleaned_title.toLowerCase();
+    const windowTitleLower = normalized.window_title.toLowerCase();
+    const webLower = (website || "").toLowerCase();
+    const appNameLower = (appName || "").toLowerCase();
+
+    // 1. Check Blacklist Rules (Broad keyword-based matching as requested by user)
+    const blacklistedRuleKey = Object.keys(domainRulesMap).find(d => {
+      const info = domainRulesMap[d];
+      if (!info || info.type !== "blacklist") return false;
+      const keyword = d.trim().toLowerCase();
+      if (!keyword) return false;
+      return (
+        domain.includes(keyword) ||
+        processLower.includes(keyword) ||
+        cleanTitleLower.includes(keyword) ||
+        windowTitleLower.includes(keyword) ||
+        webLower.includes(keyword) ||
+        appNameLower.includes(keyword)
+      );
+    });
+
+    if (blacklistedRuleKey) {
+      const info = domainRulesMap[blacklistedRuleKey]!;
+      const customScore = typeof info.score === "number" ? info.score : -10;
+      return {
+        cleanName: normalized.cleaned_title,
+        category: "Unproductive",
+        score: customScore,
+        confidence: 1.0,
+        reason: `Activity contains blacklisted keyword "${blacklistedRuleKey}".`,
+        modifiersApplied: []
+      };
+    }
+
+    // 1.5. Check Neutral Rules (Broad keyword-based matching)
+    const neutralRuleKey = Object.keys(domainRulesMap).find(d => {
+      const info = domainRulesMap[d];
+      if (!info || info.type !== "neutral") return false;
+      const keyword = d.trim().toLowerCase();
+      if (!keyword) return false;
+      return (
+        domain.includes(keyword) ||
+        processLower.includes(keyword) ||
+        cleanTitleLower.includes(keyword) ||
+        windowTitleLower.includes(keyword) ||
+        webLower.includes(keyword) ||
+        appNameLower.includes(keyword)
+      );
+    });
+
+    if (neutralRuleKey) {
+      return {
+        cleanName: normalized.cleaned_title,
+        category: "Neutral",
+        score: 0,
+        confidence: 1.0,
+        reason: `Activity contains neutral keyword "${neutralRuleKey}".`,
+        modifiersApplied: []
+      };
+    }
+
+    // 2. Check Whitelist Rules (Broad keyword-based matching and strict domain suffix matching)
+    const whitelistedRuleKey = Object.keys(domainRulesMap).find(d => {
+      const info = domainRulesMap[d];
+      if (!info || info.type !== "whitelist") return false;
+      const keyword = d.trim().toLowerCase();
+      if (!keyword) return false;
+
+      // Strict domain or subdomain suffix check first
+      if (domain === keyword || domain.endsWith("." + keyword)) {
+        return true;
+      }
+
+      // Broad keyword check
+      return (
+        domain.includes(keyword) ||
+        processLower.includes(keyword) ||
+        cleanTitleLower.includes(keyword) ||
+        windowTitleLower.includes(keyword) ||
+        webLower.includes(keyword) ||
+        appNameLower.includes(keyword)
+      );
+    });
+
+    if (whitelistedRuleKey) {
+      const info = domainRulesMap[whitelistedRuleKey]!;
+      const customScore = typeof info.score === "number" ? info.score : 10;
+      return {
+        cleanName: normalized.cleaned_title,
+        category: "Productive",
+        score: customScore,
+        confidence: 1.0,
+        reason: `Activity contains whitelisted keyword/domain "${whitelistedRuleKey}".`,
+        modifiersApplied: []
+      };
+    }
+  }
+
+  // 0. Use Groq Classification if available
+  if (groqClassification) {
+    return {
+      cleanName: normalized.cleaned_title,
+      category: groqClassification.category as ProductivityCategory,
+      score: groqClassification.score,
+      confidence: 0.95,
+      reason: groqClassification.reason,
+      modifiersApplied: []
+    };
+  }
+
   const rules = getActiveRoleRulesRecursive(roleName);
 
   let matchedRule: RoleRule | undefined = undefined;
@@ -279,7 +467,7 @@ export const classifyActivityWithAI = (
     baseCategory = matchedRule.category;
     baseScore = matchedRule.score;
     confidence = matchedRule.confidence;
-    
+
     const ruleSource = matchedRule.rule_type === "domain" ? `website "${matchedRule.pattern}"` : `application "${matchedRule.pattern}"`;
     matchedReason = `Classified as ${matchedRule.category} based on your role's productivity rules for ${ruleSource}.`;
   } else {
@@ -331,7 +519,7 @@ export const classifyActivityWithAI = (
         switches++;
       }
     }
-    
+
     // Switch Penalty
     if (switches >= 3) {
       finalScore = Math.max(-15, finalScore - 3); // Deduct 3 points for heavy fragmentation
@@ -342,7 +530,7 @@ export const classifyActivityWithAI = (
     const appsList = recentHistory.map(h => normalizeActivity(h.app_name, h.website).app_name.toLowerCase());
     const hasIDE = appsList.some(a => a.includes("vs code") || a.includes("pycharm"));
     const hasGit = appsList.some(a => a.includes("github") || a.includes("gitlab"));
-    
+
     if (hasIDE && hasGit && finalCategory === "Productive") {
       finalScore = Math.min(10, finalScore + 2); // Injected bonus
       modifiersApplied.push("Deep Focus & Workflow Continuity Bonus (Continuous coding stream)");
